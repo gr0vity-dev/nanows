@@ -29,8 +29,8 @@ async def run():
     nano_ws = NanoWebSocket(url="ws://localhost:7078")
 
     await nano_ws.subscribe_confirmation(accounts)
-    async for confirmation in nano_ws.get_confirmations():
-        print(f"Received confirmation: {confirmation}")
+    async for message in nano_ws.receive_messages():
+        print(f"Received confirmation: {message}")
 
 asyncio.run(run())
 ```
