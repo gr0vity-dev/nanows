@@ -1,7 +1,7 @@
 import json
-import websockets
 from typing import List, Union
 from asyncio import create_task, sleep
+import websockets
 
 
 class NanoWebSocket:
@@ -56,19 +56,13 @@ class NanoWebSocket:
 
         await self.websocket.send(json.dumps(ws_message))
 
-    async def unsubscribe(self, topic: str, ack=False, ws_id=None):
-        if not self.websocket:
-            raise ConnectionError()
-
-        ws_message = {
-            "action": "unsubscribe",
-            "topic": topic
-        }
-        self.extend_ack_id(ws_message, ack, ws_id)
-
-        await self.websocket.send(json.dumps(ws_message))
-
-    async def subscribe_confirmation(self, accounts: Union[str, List[str]] = None, all_local_accounts=None, ack=False, ws_id=None):
+    async def subscribe_confirmation(self,
+                                     accounts: Union[str, List[str]] = None,
+                                     all_local_accounts=None,
+                                     include_block=None,
+                                     include_sideband_info=None,
+                                     include_election_info=None,
+                                     ack=False, ws_id=None):
         if isinstance(accounts, str):
             accounts = [accounts]
 
@@ -77,13 +71,22 @@ class NanoWebSocket:
             options["accounts"] = accounts
         if all_local_accounts:
             options["all_local_accounts"] = str(all_local_accounts).lower()
+        if include_block:
+            options["include_block"] = str(include_block).lower()
+        if include_sideband_info:
+            options["include_sideband_info"] = str(
+                include_sideband_info).lower()
+        if include_election_info:
+            options["include_election_info"] = str(
+                include_election_info).lower()
 
         await self.subscribe("confirmation", options, ack, ws_id)
 
-    async def unsubscribe_confirmation(self, ack=False, ws_id=None):
-        await self.unsubscribe("confirmation", ack=ack, ws_id=ws_id)
-
-    async def subscribe_vote(self, representatives: List[str] = None, include_replays=False, include_indeterminate=False, ack=False, ws_id=None):
+    async def subscribe_vote(self,
+                             representatives: List[str] = None,
+                             include_replays=False,
+                             include_indeterminate=False,
+                             ack=False, ws_id=None):
         options = {
             "include_replays": str(include_replays).lower(),
             "include_indeterminate": str(include_indeterminate).lower(),
@@ -93,50 +96,26 @@ class NanoWebSocket:
 
         await self.subscribe("vote", options, ack, ws_id)
 
-    async def unsubscribe_vote(self, ack=False, ws_id=None):
-        await self.unsubscribe("vote", ack=ack, ws_id=ws_id)
-
     async def subscribe_telemetry(self, ack=False, ws_id=None):
         await self.subscribe("telemetry", ack=ack, ws_id=ws_id)
-
-    async def unsubscribe_telemetry(self, ack=False, ws_id=None):
-        await self.unsubscribe("telemetry", ack=ack, ws_id=ws_id)
 
     async def subscribe_started_election(self, ack=False, ws_id=None):
         await self.subscribe("started_election", ack=ack, ws_id=ws_id)
 
-    async def unsubscribe_started_election(self, ack=False, ws_id=None):
-        await self.unsubscribe("started_election", ack=ack, ws_id=ws_id)
-
     async def subscribe_stopped_election(self, ack=False, ws_id=None):
         await self.subscribe("stopped_election", ack=ack, ws_id=ws_id)
-
-    async def unsubscribe_stopped_election(self, ack=False, ws_id=None):
-        await self.unsubscribe("stopped_election", ack=ack, ws_id=ws_id)
 
     async def subscribe_new_unconfirmed_block(self, ack=False, ws_id=None):
         await self.subscribe("new_unconfirmed_block", ack=ack, ws_id=ws_id)
 
-    async def unsubscribe_new_unconfirmed_block(self, ack=False, ws_id=None):
-        await self.unsubscribe("new_unconfirmed_block", ack=ack, ws_id=ws_id)
-
     async def subscribe_bootstrap(self, ack=False, ws_id=None):
         await self.subscribe("bootstrap", ack=ack, ws_id=ws_id)
-
-    async def unsubscribe_bootstrap(self, ack=False, ws_id=None):
-        await self.unsubscribe("bootstrap", ack=ack, ws_id=ws_id)
 
     async def subscribe_active_difficulty(self, ack=False, ws_id=None):
         await self.subscribe("active_difficulty", ack=ack, ws_id=ws_id)
 
-    async def unsubscribe_active_difficulty(self, ack=False, ws_id=None):
-        await self.unsubscribe("active_difficulty", ack=ack, ws_id=ws_id)
-
     async def subscribe_work(self, ack=False, ws_id=None):
         await self.subscribe("work", ack=ack, ws_id=ws_id)
-
-    async def unsubscribe_work(self, ack=False, ws_id=None):
-        await self.unsubscribe("work", ack=ack, ws_id=ws_id)
 
     async def update_subscription(self, topic: str, accounts_add: Union[str, List[str]] = None, accounts_del: Union[str, List[str]] = None):
         if not self.websocket:
@@ -167,6 +146,45 @@ class NanoWebSocket:
             update_message["options"]["accounts_del"] = accounts_del
 
         await self.websocket.send(json.dumps(update_message))
+
+    async def unsubscribe_work(self, ack=False, ws_id=None):
+        await self.unsubscribe("work", ack=ack, ws_id=ws_id)
+
+    async def unsubscribe(self, topic: str, ack=False, ws_id=None):
+        if not self.websocket:
+            raise ConnectionError()
+
+        ws_message = {
+            "action": "unsubscribe",
+            "topic": topic
+        }
+        self.extend_ack_id(ws_message, ack, ws_id)
+
+        await self.websocket.send(json.dumps(ws_message))
+
+    async def unsubscribe_confirmation(self, ack=False, ws_id=None):
+        await self.unsubscribe("confirmation", ack=ack, ws_id=ws_id)
+
+    async def unsubscribe_vote(self, ack=False, ws_id=None):
+        await self.unsubscribe("vote", ack=ack, ws_id=ws_id)
+
+    async def unsubscribe_telemetry(self, ack=False, ws_id=None):
+        await self.unsubscribe("telemetry", ack=ack, ws_id=ws_id)
+
+    async def unsubscribe_started_election(self, ack=False, ws_id=None):
+        await self.unsubscribe("started_election", ack=ack, ws_id=ws_id)
+
+    async def unsubscribe_stopped_election(self, ack=False, ws_id=None):
+        await self.unsubscribe("stopped_election", ack=ack, ws_id=ws_id)
+
+    async def unsubscribe_new_unconfirmed_block(self, ack=False, ws_id=None):
+        await self.unsubscribe("new_unconfirmed_block", ack=ack, ws_id=ws_id)
+
+    async def unsubscribe_bootstrap(self, ack=False, ws_id=None):
+        await self.unsubscribe("bootstrap", ack=ack, ws_id=ws_id)
+
+    async def unsubscribe_active_difficulty(self, ack=False, ws_id=None):
+        await self.unsubscribe("active_difficulty", ack=ack, ws_id=ws_id)
 
     async def receive_messages(self, topic=None):
         if not self.websocket:
