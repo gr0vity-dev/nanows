@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 _manage/**
+manage/
 **egg**
 build/
 dist/
