@@ -9,7 +9,13 @@ async def run():
     await nano_ws.subscribe_telemetry()
     await nano_ws.subscribe_confirmation()
 
-    async for message in nano_ws.receive_messages():
-        print(f"Received message: {message}")
+    try:
+        async for message in nano_ws.receive_messages():
+            print(f"Received message: {message}")
+    except KeyboardInterrupt:
+        print("Interrupted by user.")
+    finally:
+        await nano_ws.disconnect()
+
 
 asyncio.run(run())
