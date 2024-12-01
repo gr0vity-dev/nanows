@@ -2,10 +2,10 @@ from setuptools import setup, find_packages
 
 setup(
     name='nanows',
-    version='0.1.1',
+    version='0.1.2',
     packages=find_packages(),
     install_requires=[
-        'websockets>=10.3,<14'
+        'websockets>=13.1,<14'
     ],
     python_requires='>=3.6',
     description='A Python WebSocket API for interacting with Nano cryptocurrency nodes.',

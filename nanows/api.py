@@ -164,7 +164,8 @@ class NanoWebSocket:
                 accounts_add_list).intersection(accounts_del_list)
             if shared_accounts:
                 raise ValueError(
-                    f"Accounts cannot be in both add and delete lists: {shared_accounts}"
+                    f"Accounts cannot be in both add and delete lists: {
+                        shared_accounts}"
                 )
 
         options = {}
@@ -183,19 +184,25 @@ class NanoWebSocket:
         Args:
             topic_filter (str): If provided, only messages matching this topic are yielded.
         """
-        if not self.websocket or self.websocket.closed:
-            raise ConnectionError("WebSocket connection is not established.")
+        while True:
+            try:
+                if not self.websocket or self.websocket.closed:
+                    await self.connect()
 
-        try:
-            async for message in self.websocket:
-                parsed_message = json.loads(message)
-                if topic_filter:
-                    if parsed_message.get("topic") == topic_filter:
+                async for message in self.websocket:
+                    parsed_message = json.loads(message)
+                    if topic_filter:
+                        if parsed_message.get("topic") == topic_filter:
+                            yield parsed_message
+                    else:
                         yield parsed_message
-                else:
-                    yield parsed_message
-        except ConnectionClosedError:
-            await self.disconnect()
+
+            except ConnectionClosedError:
+                await self.disconnect()
+                continue  # This will trigger reconnection on next iteration
+            except Exception as e:
+                await self.disconnect()
+                raise  # Re-raise unexpected exceptions
 
     # Specific subscribe methods
     async def subscribe_confirmation(
