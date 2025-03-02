@@ -35,8 +35,7 @@ class NanoWebSocket:
             self.websocket = await websockets.connect(self.websocket_url)
             self.keepalive_task = asyncio.create_task(self._keepalive_loop())
         except (InvalidHandshake, WebSocketException) as e:
-            raise ConnectionError(
-                f"Failed to connect to {self.websocket_url}: {e}")
+            raise ConnectionError(f"Failed to connect to {self.websocket_url}: {e}")
 
     async def disconnect(self):
         """
@@ -160,8 +159,7 @@ class NanoWebSocket:
         )
 
         if accounts_add_list and accounts_del_list:
-            shared_accounts = set(
-                accounts_add_list).intersection(accounts_del_list)
+            shared_accounts = set(accounts_add_list).intersection(accounts_del_list)
             if shared_accounts:
                 raise ValueError(
                     f"Accounts cannot be in both add and delete lists: {
@@ -212,6 +210,7 @@ class NanoWebSocket:
         include_block: Optional[bool] = None,
         include_election_info: Optional[bool] = None,
         include_sideband_info: Optional[bool] = None,
+        include_linked_account: Optional[bool] = None,
         ack: bool = False,
         ws_id: Optional[str] = None,
     ):
@@ -237,11 +236,11 @@ class NanoWebSocket:
         if include_block is not None:
             options["include_block"] = str(include_block).lower()
         if include_election_info is not None:
-            options["include_election_info"] = str(
-                include_election_info).lower()
+            options["include_election_info"] = str(include_election_info).lower()
         if include_sideband_info is not None:
-            options["include_sideband_info"] = str(
-                include_sideband_info).lower()
+            options["include_sideband_info"] = str(include_sideband_info).lower()
+        if include_linked_account is not None:
+            options["include_linked_account"] = str(include_linked_account).lower()
 
         await self.subscribe("confirmation", options, ack, ws_id)
 
@@ -274,9 +273,7 @@ class NanoWebSocket:
 
         await self.subscribe("vote", options, ack, ws_id)
 
-    async def subscribe_telemetry(
-        self, ack: bool = False, ws_id: Optional[str] = None
-    ):
+    async def subscribe_telemetry(self, ack: bool = False, ws_id: Optional[str] = None):
         await self.subscribe("telemetry", ack=ack, ws_id=ws_id)
 
     async def subscribe_started_election(
@@ -294,9 +291,7 @@ class NanoWebSocket:
     ):
         await self.subscribe("new_unconfirmed_block", ack=ack, ws_id=ws_id)
 
-    async def subscribe_bootstrap(
-        self, ack: bool = False, ws_id: Optional[str] = None
-    ):
+    async def subscribe_bootstrap(self, ack: bool = False, ws_id: Optional[str] = None):
         await self.subscribe("bootstrap", ack=ack, ws_id=ws_id)
 
     async def subscribe_active_difficulty(
@@ -304,9 +299,7 @@ class NanoWebSocket:
     ):
         await self.subscribe("active_difficulty", ack=ack, ws_id=ws_id)
 
-    async def subscribe_work(
-        self, ack: bool = False, ws_id: Optional[str] = None
-    ):
+    async def subscribe_work(self, ack: bool = False, ws_id: Optional[str] = None):
         await self.subscribe("work", ack=ack, ws_id=ws_id)
 
     # Specific unsubscribe methods
@@ -315,9 +308,7 @@ class NanoWebSocket:
     ):
         await self.unsubscribe("confirmation", ack, ws_id)
 
-    async def unsubscribe_vote(
-        self, ack: bool = False, ws_id: Optional[str] = None
-    ):
+    async def unsubscribe_vote(self, ack: bool = False, ws_id: Optional[str] = None):
         await self.unsubscribe("vote", ack, ws_id)
 
     async def unsubscribe_telemetry(
@@ -350,7 +341,5 @@ class NanoWebSocket:
     ):
         await self.unsubscribe("active_difficulty", ack, ws_id)
 
-    async def unsubscribe_work(
-        self, ack: bool = False, ws_id: Optional[str] = None
-    ):
+    async def unsubscribe_work(self, ack: bool = False, ws_id: Optional[str] = None):
         await self.unsubscribe("work", ack, ws_id)
